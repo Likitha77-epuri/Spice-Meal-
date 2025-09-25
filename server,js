@@ -1,0 +1,28 @@
+const express = require('express');
+const fs = require('fs');
+const bodyParser = require('body-parser');
+const app = express();
+const PORT = 3000;
+
+app.use(bodyParser.json());
+app.use(express.static(__dirname)); // Serve your HTML/CSS/JS
+
+// Save order details
+app.post('/api/order', (req, res) => {
+    const order = req.body;
+    fs.readFile('orders.json', (err, data) => {
+        let orders = [];
+        if (!err && data.length > 0) {
+            orders = JSON.parse(data);
+        }
+        orders.push(order);
+        fs.writeFile('orders.json', JSON.stringify(orders, null, 2), (err) => {
+            if (err) return res.status(500).send('Error saving order');
+            res.send({ success: true });
+        });
+    });
+});
+
+app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+});
